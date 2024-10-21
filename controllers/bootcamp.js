@@ -1,17 +1,16 @@
 const Bootcamp = require("../models/Bootcamp");
+const ErrorResponse = require("../utils/errorResponse");
+
 
 exports.getBootcamps = async (req, res, next) => {
    try{
     const bootcamps = await Bootcamp.find();
 
-    if(!bootcamps){
-         return res.status(400).json({ success: false });
-    }
+  
     res.status(200).json({ success: true, data: bootcamps });
    }catch(err){
-    console.error(error);
-    res.status(400).json({ success: false, error: 'Bad Request' });
-
+  
+     next(err);
    }
 }
 
@@ -19,11 +18,16 @@ exports.getBootcamps = async (req, res, next) => {
 exports.getBootcamp = async (req, res, next) => {
     try{
         const bootcamp = await Bootcamp.findById(req.params.id);
-
+        if(!bootcamp){
+            return next(
+               new ErrorResponse(`Bootcamp not found with the id of  ${req.params.id}`, 404)       
+           );
+           
+       }
         res.status(200).json({ success: true, data: bootcamp});
     }catch(err){
-       console.error(error);
-        res.status(400).json({ success: false, error: 'Bad Request' });
+      // console.error(error);
+       next(err);
     }
 }
 exports.createBootcamp = async (req, res, next) => {
@@ -34,8 +38,8 @@ exports.createBootcamp = async (req, res, next) => {
         success: true,  
         data: bootcamp 
     });
-    } catch (error) {
-        console.error(error);
+    } catch (err) {
+        //console.error(error);
         res.status(400).json({ success: false, error: 'Bad Request' });
     }  
 };
@@ -47,12 +51,15 @@ exports.updateBootcamp = async (req, res, next) => {
          });
     
          if(!bootcamp){
-           return  res.status(400).json({success: false});
-         }
+            return next(
+               new ErrorResponse(`Bootcamp not found with the id of  ${req.params.id}`, 404)       
+           );
+           
+       }
              res.status(200).json({success: true, data: bootcamp });
-    } catch (error) {
-        console.error(error);
-        res.status(400).json({ success: false, error: 'Bad Request' });
+    } catch (err) {
+        //console.error(error);
+        next(err);
     };
    
 }
@@ -61,14 +68,17 @@ exports.deleteBootcamp = async (req, res, next) => {
     try {
         const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id);
 
-    if(!bootcamp){
-        return res.status(404).json({success: false});
-    }
-      res.status(200).json({success: true});
+        if(!bootcamp){
+            return next(
+               new ErrorResponse(`Bootcamp not found with the id of  ${req.params.id}`, 404)       
+           );
+           
+       }
+      res.status(200).json({success: true, data:{}});
 
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, error: 'Server Error' });
+    } catch (err) {
+        //console.error(error);
+        next(err);
     }
    
 }
